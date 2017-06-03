@@ -1,0 +1,3 @@
+[
+	{ "keys": ["Alt+F5"], "command": "pack_files" }
+]
