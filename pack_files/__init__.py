@@ -1,5 +1,7 @@
 import os
+# noinspection PyUnresolvedReferences
 from fman import DirectoryPaneCommand, show_status_message, clear_status_message
+# noinspection PyUnresolvedReferences
 from fman.util.qt import run_in_main_thread
 from pack_files.pack_dialog import PackDialog
 from pack_files.async_zip import AsyncZip
@@ -7,9 +9,19 @@ from pack_files.async_tar import AsyncTar
 
 
 class PackFiles(DirectoryPaneCommand):
+    # on success clear selection and reset message in status bar
     def success(self):
         self.pane.clear_selection()
         clear_status_message()
+
+    # create name for archive from file name
+    @staticmethod
+    def get_file_name(selected_file):
+        basename = os.path.basename(selected_file)
+        if os.path.isfile(selected_file):
+            return os.path.splitext(basename)[0]
+        else:
+            return basename
 
     @run_in_main_thread
     def __call__(self):
@@ -24,15 +36,15 @@ class PackFiles(DirectoryPaneCommand):
             # select file
             self.pane.toggle_selection(selected_file)
             # get archive filename - selected file name without extension or directory name
-            basename = os.path.basename(selected_file)
-            if os.path.isfile(selected_file):
-                archive_name = os.path.splitext(basename)[0]
-            else:
-                archive_name = basename
+            archive_name = self.get_file_name(selected_file)
         else:
-            # get archive filename - parent directory name
             first_file = selected_files[0]
-            archive_name = os.path.basename(os.path.dirname(first_file))
+            if len(selected_files) > 1:
+                # get archive filename - parent directory name
+                archive_name = os.path.basename(os.path.dirname(first_file))
+            else:
+                # if only one file selected - archive name is its name
+                archive_name = self.get_file_name(first_file)
 
         # if somehow no files were selected - return
         if not selected_files:
