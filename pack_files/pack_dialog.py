@@ -1,3 +1,4 @@
+import os
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
@@ -10,7 +11,7 @@ class PackDialog(QDialog):
         self.packer_types = [".zip", ".tar", ".tar.gz", ".tar.bz2", ".tar.xz"]
         self.packer_type = self.packer_types[0]
 
-        self.resize(440, 120)
+        self.resize(440, 130)
         self.setFixedSize(self.size())
         self.setWindowTitle('Pack files')
         self.setModal(True)
@@ -24,6 +25,7 @@ class PackDialog(QDialog):
         self.line_edit = QLineEdit()
         self.line_edit.setText(self.target_file + self.packer_type)
         self.line_edit.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        self.line_edit.textChanged.connect(self.on_line_edit_change)
 
         self.combo_box = QComboBox()
         self.combo_box.setEnabled(True)
@@ -36,6 +38,9 @@ class PackDialog(QDialog):
         h_layout.addWidget(self.line_edit)
         h_layout.addWidget(self.combo_box)
 
+        self.label_error = QLabel()
+        self.label_error.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+
         v_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.button_box = QDialogButtonBox()
@@ -46,6 +51,7 @@ class PackDialog(QDialog):
         v_layout = QVBoxLayout()
         v_layout.addWidget(self.label)
         v_layout.addItem(h_layout)
+        v_layout.addWidget(self.label_error)
         v_layout.addItem(v_spacer)
         v_layout.addWidget(self.button_box)
         self.setLayout(v_layout)
@@ -65,11 +71,29 @@ class PackDialog(QDialog):
         self.line_edit.setText(path + text)
         self.packer_type = text
 
+    # hide error label on text change
+    def on_line_edit_change(self):
+        self.label_error.setText('')
+
     def get_archive_path(self):
         return self.line_edit.text()
 
     def get_packer_type(self):
         return self.packer_type
+
+    def done(self, p_int):
+        if p_int == QDialog.Accepted:
+            archive_path = self.get_archive_path()
+            # check if we can write to target directory
+            if not os.path.exists(archive_path):
+                QDialog.done(self, p_int)
+            else:
+                # error: write permission error
+                self.label_error.setText('Target file already exists.')
+                return
+        else:
+            QDialog.done(self, p_int)
+            return
 
     @staticmethod
     def get_packer_options(file_count, target_file, parent=None):
