@@ -2,7 +2,9 @@ import os
 # noinspection PyUnresolvedReferences
 from fman import DirectoryPaneCommand, show_status_message, clear_status_message
 # noinspection PyUnresolvedReferences
-from fman.util.qt import run_in_main_thread
+from fman.url import as_human_readable
+# noinspection PyUnresolvedReferences
+from fman.impl.util.qt import run_in_main_thread
 from pack_files.pack_dialog import PackDialog
 from pack_files.async_zip import AsyncZip
 from pack_files.async_tar import AsyncTar
@@ -50,13 +52,19 @@ class PackFiles(DirectoryPaneCommand):
         if not selected_files:
             return
 
+        selected_files_clean = []
+        for selected_file in selected_files:
+            selected_files_clean.append( as_human_readable(selected_file) )
+
+        selected_files = selected_files_clean
+
         if not archive_name:
             archive_name = "pack"
 
         # get target path
         panes = self.pane.window.get_panes()
         target_pane = panes[(panes.index(self.pane) + 1) % len(panes)]
-        target_path = target_pane.get_path()
+        target_path = as_human_readable(target_pane.get_path())
 
         # display options dialog, wait for results
         archive_path, packer_type, result = PackDialog.get_packer_options(len(selected_files),
