@@ -4,7 +4,7 @@ from fman import DirectoryPaneCommand, show_status_message, clear_status_message
 # noinspection PyUnresolvedReferences
 from fman.url import as_human_readable
 # noinspection PyUnresolvedReferences
-from fman.impl.util.qt import run_in_main_thread
+from fman.impl.util.qt.thread import run_in_main_thread
 from pack_files.pack_dialog import PackDialog
 from pack_files.async_zip import AsyncZip
 from pack_files.async_tar import AsyncTar
